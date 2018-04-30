@@ -776,7 +776,6 @@ out:
 #ifdef CONFIG_SECURITY_SELINUX_ALWAYS_ENFORCE
 	selinux_enforcing = 1;
 #endif
-#endif
 // ] SEC_SELINUX_PORTING_COMMON
 	if (!selinux_enforcing)
 		return 0;
@@ -1540,7 +1539,6 @@ out:
 // [ SEC_SELINUX_PORTING_COMMON
 #ifdef CONFIG_SECURITY_SELINUX_ALWAYS_ENFORCE
 	selinux_enforcing = 1;
-#endif
 #endif
 // ] SEC_SELINUX_PORTING_COMMON
 	if (!selinux_enforcing)
