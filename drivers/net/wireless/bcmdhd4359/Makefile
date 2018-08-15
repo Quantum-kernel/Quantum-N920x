@@ -354,7 +354,7 @@ endif
   DHDCFLAGS += -DSUPPORT_2G_VHT
   DHDCFLAGS += -DSUPPORT_WL_TXPOWER
   DHDCFLAGS += -DWL11ULB
-  DHDCFLAGS += -DENABLE_IPMCAST_FILTER
+# DHDCFLAGS += -DENABLE_IPMCAST_FILTER
  # Enable SensorHub Move/Stop
 #ifeq ($(filter y,$(CONFIG_WLAN_GRACE) $(CONFIG_SEC_GRACEQLTE_PROJECT)),y)
 # DHDCFLAGS += -DSUPPORT_SENSORHUB
@@ -911,11 +911,12 @@ DHDCFLAGS += -include "dhd_sec_feature.h"
 
 #EXTRA_LDFLAGS += --strip-debug
 
-EXTRA_CFLAGS += $(DHDCFLAGS) -DDHD_DEBUG
+EXTRA_CFLAGS += $(DHDCFLAGS)
 EXTRA_CFLAGS += -DSRCBASE=\"$(src)\"
 EXTRA_CFLAGS += -I$(src)/include/ -I$(src)/
 EXTRA_CFLAGS += $(call cc-option, -Wunused-but-set-variable)
-EXTRA_CFLAGS += $(call cc-option, -Wmaybe-uninitialized)
+#EXTRA_CFLAGS += $(call cc-option, -Wmaybe-uninitialized)
+EXTRA_CFLAGS += $(call cc-option, -Wno-maybe-uninitialized)
 KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
 
 DHDOFILES := dhd_pno.o dhd_common.o dhd_ip.o dhd_custom_gpio.o dhd_custom_sec.o \
@@ -964,3 +965,5 @@ clean:
 install:
 	@$(MAKE) --no-print-directory -C $(KDIR) \
 		SUBDIRS=$(CURDIR) modules_install
+
+
