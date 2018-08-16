@@ -1228,9 +1228,9 @@ struct hmp_global_attr {
 };
 
 #ifdef CONFIG_HMP_FREQUENCY_INVARIANT_SCALE
-#define HMP_DATA_SYSFS_MAX 14
+#define HMP_DATA_SYSFS_MAX 20
 #else
-#define HMP_DATA_SYSFS_MAX 13
+#define HMP_DATA_SYSFS_MAX 19
 #endif
 
 struct hmp_data_struct {
@@ -1290,6 +1290,7 @@ static u64 hmp_variable_scale_convert(u64 delta);
 #define SCHED_FREQSCALE_SHIFT 10
 struct cpufreq_extents {
 	u32 curr_scale;
+	u32 curr_index;
 	u32 cpufreq_min;
 	u32 cpufreq_max;
 	u32 thermal_min;
@@ -1583,8 +1584,14 @@ static inline void __update_group_entity_contrib(struct sched_entity *se) {}
  * tweaking suit particular needs.
  */
 
-unsigned int hmp_up_threshold = 479;
-unsigned int hmp_down_threshold = 214;
+/* profile
+ * in code: 479 256
+ * stock: 524 214
+ * battery: 700 256
+ * performance: 430 150
+ */
+unsigned int hmp_up_threshold = 700;
+unsigned int hmp_down_threshold = 256;
 
 unsigned int hmp_semiboost_up_threshold = 400;
 unsigned int hmp_semiboost_down_threshold = 150;
@@ -3710,7 +3717,7 @@ static DEFINE_RAW_SPINLOCK(hmp_boost_lock);
 static DEFINE_RAW_SPINLOCK(hmp_semiboost_lock);
 static DEFINE_RAW_SPINLOCK(hmp_sysfs_lock);
 
-#define BOOT_BOOST_DURATION 40000000 /* microseconds */
+#define BOOT_BOOST_DURATION 20000000 /* microseconds */
 #define YIELD_CORRECTION_TIME 10000000 /* nanoseconds */
 
 #ifdef CONFIG_SCHED_HMP_PRIO_FILTER
@@ -4961,7 +4968,7 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p, bool preemp
  *      rewrite all of this once again.]
  */ 
 
-static unsigned long __read_mostly max_load_balance_interval = HZ/10;
+static unsigned long __read_mostly max_load_balance_interval = HZ/50;
 
 #define LBF_ALL_PINNED	0x01
 #define LBF_NEED_BREAK	0x02
@@ -6672,7 +6679,7 @@ static DEFINE_SPINLOCK(balancing);
  */
 void update_max_interval(void)
 {
-	max_load_balance_interval = HZ*num_online_cpus()/10;
+	max_load_balance_interval = (HZ/50)*num_online_cpus();
 }
 
 /*
