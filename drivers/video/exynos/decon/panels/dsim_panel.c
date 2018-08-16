@@ -61,7 +61,7 @@ int mdnie_lite_send_seq(struct dsim_device *dsim, struct lcd_seq_info *seq, u32 
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return ret;
 	}
@@ -83,7 +83,7 @@ int mdnie_lite_read(struct dsim_device *dsim, u8 addr, u8 *buf, u32 size)
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return -EIO;
 	}
@@ -212,7 +212,6 @@ static int dsim_panel_probe(struct dsim_device *dsim)
 	panel->adaptive_control = ACL_STATUS_ON;
 	panel->lux = -1;
 
-
 #ifdef CONFIG_EXYNOS_DECON_LCD_MCD
 	panel->mcd_on = 0;
 #endif
@@ -259,7 +258,7 @@ static int dsim_panel_displayon(struct dsim_device *dsim)
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return ret;
 	}
@@ -310,7 +309,7 @@ static int dsim_panel_suspend(struct dsim_device *dsim)
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 			dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 			return ret;
 	}
@@ -347,7 +346,7 @@ static int dsim_panel_dump(struct dsim_device *dsim)
 
 	dsim_info("%s was called\n", __func__);
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return ret;
 	}
