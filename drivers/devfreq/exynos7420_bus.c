@@ -4877,7 +4877,7 @@ static int exynos7_devfreq_mif_set_freq(struct devfreq_data_mif *data,
 
 #ifdef DRAM_POWER_DYNAMIC_SAVE
 #ifndef CONFIG_DISABLE_DRAM_PBR
-	if (!(data->mem_density == LP4_12Gb_Die))
+	if (!((data->mem_density == LP4_12Gb_Die) && (data->tREFI == RATE_QUARTER)))
 		exynos7_devfreq_mif_set_refresh_method_pre_dvfs(data, target_idx, old_idx);
 #endif
 #endif
@@ -5034,7 +5034,7 @@ static int exynos7_devfreq_mif_set_freq(struct devfreq_data_mif *data,
 
 #ifdef DRAM_POWER_DYNAMIC_SAVE
 #ifndef CONFIG_DISABLE_DRAM_PBR
-	if (!(data->mem_density == LP4_12Gb_Die))
+	if (!((data->mem_density == LP4_12Gb_Die) && (data->tREFI == RATE_QUARTER)))
 		exynos7_devfreq_mif_set_refresh_method_post_dvfs(data, target_idx, old_idx);
 #endif
 	exynos7_devfreq_mif_set_dynamic_sref_cycle(data, target_idx);
