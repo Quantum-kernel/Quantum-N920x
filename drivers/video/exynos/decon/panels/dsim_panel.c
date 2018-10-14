@@ -61,7 +61,7 @@ int mdnie_lite_send_seq(struct dsim_device *dsim, struct lcd_seq_info *seq, u32 
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return ret;
 	}
@@ -83,7 +83,7 @@ int mdnie_lite_read(struct dsim_device *dsim, u8 addr, u8 *buf, u32 size)
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return -EIO;
 	}
@@ -212,7 +212,6 @@ static int dsim_panel_probe(struct dsim_device *dsim)
 	panel->adaptive_control = ACL_STATUS_ON;
 	panel->lux = -1;
 
-
 #ifdef CONFIG_EXYNOS_DECON_LCD_MCD
 	panel->mcd_on = 0;
 #endif
@@ -259,7 +258,7 @@ static int dsim_panel_displayon(struct dsim_device *dsim)
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return ret;
 	}
@@ -282,12 +281,6 @@ static int dsim_panel_displayon(struct dsim_device *dsim)
 	if(panel->hmt_on == HMT_ON)
 		hmt_set_mode(dsim, true);
 #endif
-
-#ifdef CONFIG_LCD_WEAKNESS_CCB
-	if(panel->current_ccb != 0)
-		ccb_set_mode(dsim, panel->current_ccb, 0);
-#endif
-
 	dsim_panel_set_brightness(dsim, 1);
 
 	if (panel->ops->displayon) {
@@ -310,7 +303,7 @@ static int dsim_panel_suspend(struct dsim_device *dsim)
 	int ret = 0;
 	struct panel_private *panel = &dsim->priv;
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 			dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 			return ret;
 	}
@@ -347,7 +340,7 @@ static int dsim_panel_dump(struct dsim_device *dsim)
 
 	dsim_info("%s was called\n", __func__);
 
-	if (panel->lcdConnected == PANEL_DISCONNEDTED) {
+	if (panel->lcdConnected == PANEL_DISCONNECTED) {
 		dsim_err("%s : %d : panel was not connected\n", __func__, dsim->id);
 		return ret;
 	}
@@ -357,7 +350,6 @@ static int dsim_panel_dump(struct dsim_device *dsim)
 
 	return ret;
 }
-
 #ifdef CONFIG_LCD_DOZE_MODE
 static int dsim_panel_enteralpm(struct dsim_device *dsim)
 {
@@ -426,7 +418,7 @@ static int dsim_panel_exitalpm(struct dsim_device *dsim)
 		panel->state = PANEL_STATE_RESUMED;
 	}
 
-	if (panel->ops->enteralpm) {
+	if (panel->ops->exitalpm) {
 		ret = panel->ops->exitalpm(dsim);
 		if (ret) {
 			dsim_err("ERR:%s:failed to exit alpm \n", __func__);
@@ -504,5 +496,4 @@ err_get_dsu_config:
 }
 early_param("lcdres_offset", get_dsu_config);
 #endif
-
 
