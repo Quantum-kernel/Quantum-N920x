@@ -12,11 +12,6 @@ on post-fs-data
     rm /data/system/gps/smd_started
     rm /data/system/gps/sv_cno.info
 
-    setprop ro.gps.chip.vendor BCM4773_EXERCISE
-    
-# GPS SLocation Core
-    setprop ro.gps.chip.vendor.slocation BCM4773_SLOCATION_CORE
-
 # SensorHub Debugging File Node
 chown gps system /sys/devices/platform/bbd.0/BBD
 chown gps system /sys/devices/platform/bbd.0/DEV
@@ -32,14 +27,14 @@ chown gps system /sys/devices/platform/bbd.0/ssi_trace
 chown gps system /sys/devices/platform/bbd.0/shmd
 
 # SensorHub (Location Hub)
-service lhd /system/vendor/bin/hw/lhd /system/vendor/etc/sensor/lhd.conf
+service lhd /vendor/bin/hw/lhd /vendor/etc/sensor/lhd.conf
     class main
     user gps
     group system inet net_raw
     ioprio be 0
 
 # GPS
-service gpsd /system/vendor/bin/hw/gpsd -c /system/vendor/etc/gnss/gps.xml
+service gpsd /vendor/bin/hw/gpsd -c /vendor/etc/gnss/gps.xml
     class main
     user gps
     group system inet net_raw wakelock

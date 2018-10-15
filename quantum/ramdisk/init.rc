@@ -617,21 +617,6 @@ on post-fs-data
     chown system radio /sys/class/fingerprint/fingerprint/adm
     chown system radio /sys/class/fingerprint/fingerprint/bfs_values
 
-    # Samsung Pay
-    mkdir /efs/pfw_data 0760 spay spay
-
-    # MST/NFC Switch
-    chown spay system /dev/mst_ctrl
-    chmod 0660 /dev/mst_ctrl
-
-    # MST Factory Test
-    chown system system /sys/class/mstldo/mst_drv/transmit
-    chmod 0770 /sys/class/mstldo/mst_drv/transmit
-
-    # MST-MFC Support
-    chown system system /sys/class/mstldo/mst_drv/mfc
-    chmod 0770 /sys/class/mstldo/mst_drv/mfc
-
 # Downloadable Filter
     mkdir /data/DownFilters       0775 system system
     mkdir /data/DownFilters/Lib   0775 system system

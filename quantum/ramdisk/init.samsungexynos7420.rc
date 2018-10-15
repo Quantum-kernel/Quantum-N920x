@@ -10,6 +10,7 @@ on early-init
     mount debugfs /sys/kernel/debug /sys/kernel/debug
 
 on init
+
     start watchdogd
     mkdir /preload 0771 system system
 
