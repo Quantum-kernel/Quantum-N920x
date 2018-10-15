@@ -491,12 +491,12 @@ struct ipv6_work_info_t {
 	unsigned long		event;
 };
 
-//#ifdef DHD_DEBUG
+#ifdef DHD_DEBUG
 typedef struct dhd_dump {
 	uint8 *buf;
 	int bufsize;
 } dhd_dump_t;
-//#endif /* DHD_DEBUG */
+#endif /* DHD_DEBUG */
 
 /* When Perimeter locks are deployed, any blocking calls must be preceeded
  * with a PERIM UNLOCK and followed by a PERIM LOCK.
@@ -13863,10 +13863,10 @@ dhd_mem_dump(void *handle, void *event_info, u8 event)
 		return;
 	}
 
-	/*if (write_to_file(&dhd->pub, dump->buf, dump->bufsize)) {
+	if (write_to_file(&dhd->pub, dump->buf, dump->bufsize)) {
 		DHD_ERROR(("%s: writing SoC_RAM dump to the file failed\n", __FUNCTION__));
 		dhd->pub.memdump_success = FALSE;
-	}*/
+	}
 
 	if (dhd->pub.memdump_enabled == DUMP_MEMFILE_BUGON &&
 #ifdef DHD_LOG_DUMP
