@@ -53,6 +53,7 @@ on init
 
     # Link /vendor to /system/vendor for devices without a vendor partition.
     symlink /system/vendor /vendor
+    symlink /system/odm /odm
 
     # Mount cgroup mount point for cpu accounting
     mount cgroup none /acct cpuacct
