@@ -25,7 +25,7 @@ enum {
 	CONN_GADGET_IOCTL_BIND_STATUS_UNBIND = 2
 };
 
-//#if defined(__ANDROID__)||defined(__TIZEN__)
+#if defined(__ANDROID__)||defined(__TIZEN__)
 
 enum { 
 	CONN_GADGET_IOCTL_NR_0 = 0,
@@ -44,4 +44,4 @@ enum {
 #define CONN_GADGET_IOCTL_MAX_NR			CONN_GADGET_IOCTL_NR_MAX
 #endif
 
-//#endif
+#endif

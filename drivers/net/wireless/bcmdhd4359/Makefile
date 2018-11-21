@@ -1,12 +1,12 @@
 #
 # Copyright (C) 1999-2017, Broadcom Corporation
-#
+# 
 #      Unless you and Broadcom execute a separate written software license
 # agreement governing use of this software, this software is licensed to you
 # under the terms of the GNU General Public License version 2 (the "GPL"),
 # available at http://www.broadcom.com/licenses/GPLv2.php, with the
 # following added to such license:
-#
+# 
 #      As a special exception, the copyright holders of this software give you
 # permission to link this software with independent modules, and to copy and
 # distribute the resulting executable under terms of your choice, provided that
@@ -14,7 +14,7 @@
 # the license of that module.  An independent module is a module which is not
 # derived from this software.  The special exception does not apply to any
 # modifications of the software.
-#
+# 
 #      Notwithstanding the above, under no circumstances may you combine this
 # software in any way with any other Broadcom software provided under a license
 # other than the GPL, without Broadcom's express prior written consent.
@@ -230,7 +230,7 @@ DHDCFLAGS += -DPKTPRIO_OVERRIDE
 # Prevent rx thread monopolize
 DHDCFLAGS += -DWAIT_DEQUEUE
 
-# Control PM related value for MFG process(Read from file)
+# Control PM related value for MFG process(Read from file) 
 DHDCFLAGS += -DDHD_PM_CONTROL_FROM_FILE
 
 # Use Android wake lock mechanism
@@ -265,7 +265,31 @@ DHDCFLAGS += -DDHD_BLOB_EXISTENCE_CHECK
 # Random mac scan
 DHDCFLAGS += -DSUPPORT_RANDOM_MAC_SCAN
 
+# Android Version Check from Platform source
+CANDIDATE_VERSION_PATH := ./../../build/core ../../../../../../build/core out
+FOUND_VERSION_PATH := $(foreach dir,$(CANDIDATE_VERSION_PATH), $(wildcard $(dir)/version_defaults.mk))
+FOUND_VERSION_PATH := $(word 1, $(FOUND_VERSION_PATH))
+ifeq ($(FOUND_VERSION_PATH),)
+$(warning Not found Android version file. Set as Legacy mode)
+DHDCFLAGS += -DDHD_LEGACY_FILE_PATH
+DHDCFLAGS += -DDHD_DISABLE_ANDROID_FEATURE_SET
+else
+# Extract version string and get major number
+ANDROID_PLATFORM_VERSION := $(shell grep "PLATFORM_VERSION := " $(FOUND_VERSION_PATH) | cut -d "=" -f 2 | cut -d "." -f 1 | sed 's/ //g')
+$(warning Android Platform Version : $(ANDROID_PLATFORM_VERSION))
+# If Android version lower than 7(Nougat) => Use Legacy File path
+ifeq ($(shell expr $(ANDROID_PLATFORM_VERSION) \< 7),1)
+DHDCFLAGS += -DDHD_LEGACY_FILE_PATH
+DHDCFLAGS += -DDHD_DISABLE_ANDROID_FEATURE_SET
+$(warning Will be use Legacy file path)
+else
 DHDCFLAGS += -DDHD_SET_COUNTRY_SUPPORT
+endif
+endif
+
+##############################
+# Android Platform Definition
+##############################
 
 ###########
 # Lollipop
@@ -354,7 +378,7 @@ endif
   DHDCFLAGS += -DSUPPORT_2G_VHT
   DHDCFLAGS += -DSUPPORT_WL_TXPOWER
   DHDCFLAGS += -DWL11ULB
-# DHDCFLAGS += -DENABLE_IPMCAST_FILTER
+  DHDCFLAGS += -DENABLE_IPMCAST_FILTER
  # Enable SensorHub Move/Stop
 #ifeq ($(filter y,$(CONFIG_WLAN_GRACE) $(CONFIG_SEC_GRACEQLTE_PROJECT)),y)
 # DHDCFLAGS += -DSUPPORT_SENSORHUB
@@ -911,12 +935,11 @@ DHDCFLAGS += -include "dhd_sec_feature.h"
 
 #EXTRA_LDFLAGS += --strip-debug
 
-EXTRA_CFLAGS += $(DHDCFLAGS)
+EXTRA_CFLAGS += $(DHDCFLAGS) -DDHD_DEBUG
 EXTRA_CFLAGS += -DSRCBASE=\"$(src)\"
 EXTRA_CFLAGS += -I$(src)/include/ -I$(src)/
 EXTRA_CFLAGS += $(call cc-option, -Wunused-but-set-variable)
-#EXTRA_CFLAGS += $(call cc-option, -Wmaybe-uninitialized)
-EXTRA_CFLAGS += $(call cc-option, -Wno-maybe-uninitialized)
+EXTRA_CFLAGS += $(call cc-option, -Wmaybe-uninitialized)
 KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
 
 DHDOFILES := dhd_pno.o dhd_common.o dhd_ip.o dhd_custom_gpio.o dhd_custom_sec.o \
@@ -965,5 +988,3 @@ clean:
 install:
 	@$(MAKE) --no-print-directory -C $(KDIR) \
 		SUBDIRS=$(CURDIR) modules_install
-
-

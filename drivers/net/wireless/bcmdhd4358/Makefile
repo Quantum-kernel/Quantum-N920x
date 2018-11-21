@@ -235,6 +235,7 @@ else
 DHDCFLAGS += -DDHD_SET_COUNTRY_SUPPORT
 endif
 endif
+
 ##############################
 # Android Platform Definition
 ##############################

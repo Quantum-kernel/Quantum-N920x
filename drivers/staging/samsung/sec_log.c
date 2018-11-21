@@ -446,7 +446,7 @@ void sec_debug_save_last_kmsg(unsigned char* head_ptr, unsigned char* curr_ptr)
 	}
 
 	/* provide previous log as last_kmsg */
-	last_kmsg_size = (size_t)(1 << CONFIG_LOG_BUF_SHIFT);
+	last_kmsg_size = (size_t)SZ_2M;
 	last_kmsg_buffer = (char *)kzalloc(last_kmsg_size, GFP_NOWAIT);
 
 	if (last_kmsg_size && last_kmsg_buffer) {

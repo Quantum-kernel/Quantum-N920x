@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2009 Jason Baron <jbaron@redhat.com>
  * Copyright (C) 2011 Peter Zijlstra <pzijlstr@redhat.com>
- * Copyright (C) 2018 prashantp01 <elonpras@my.smccd.edu>
+ *
  */
 #include <linux/memory.h>
 #include <linux/uaccess.h>

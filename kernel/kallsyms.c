@@ -6,7 +6,7 @@
  *   Copyright 2002 Rusty Russell <rusty@rustcorp.com.au> IBM Corporation
  *
  * ChangeLog:
- * Copyright (C) 2018 prashantp01 <elonpras@my.smccd.edu>
+ *
  * (25/Aug/2004) Paulo Marques <pmarques@grupopie.com>
  *      Changed the compression method from stem compression to "table lookup"
  *      compression (see scripts/kallsyms.c for a more complete description)

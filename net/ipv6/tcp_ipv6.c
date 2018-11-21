@@ -285,7 +285,7 @@ int tcp_v6_connect(struct sock *sk, struct sockaddr *uaddr,
 	fl6.flowi6_mark = sk->sk_mark;
 	fl6.fl6_dport = usin->sin6_port;
 	fl6.fl6_sport = inet->inet_sport;
-	fl6.flowi6_uid = sock_i_uid(sk);
+	fl6.flowi6_uid = sk->sk_uid;
 
 	opt = rcu_dereference_protected(np->opt, sock_owned_by_user(sk));
 	final_p = fl6_update_dst(&fl6, opt, &final);
@@ -913,12 +913,12 @@ static const struct tcp_request_sock_ops tcp_request_sock_ipv6_ops = {
 #endif
 
 #ifdef CONFIG_MPTCP
-static void tcp_v6_send_response(struct sk_buff *skb, u32 seq, u32 ack,
+static void tcp_v6_send_response(struct sock *sk, struct sk_buff *skb, u32 seq, u32 ack,
 				 u32 data_ack, u32 win, u32 tsval, u32 tsecr,int oif,
 				 struct tcp_md5sig_key *key, int rst, u8 tclass,
 				 u32 label, int mptcp)
 #else
-static void tcp_v6_send_response(struct sk_buff *skb, u32 seq, u32 ack, u32 win,
+static void tcp_v6_send_response(struct sock *sk, struct sk_buff *skb, u32 seq, u32 ack, u32 win,
 				 u32 tsval, u32 tsecr,
 				 struct tcp_md5sig_key *key, int rst, u8 tclass,
 				 u32 label)
@@ -1020,6 +1020,7 @@ static void tcp_v6_send_response(struct sk_buff *skb, u32 seq, u32 ack, u32 win,
 	fl6.flowi6_mark = IP6_REPLY_MARK(net, skb->mark);
 	fl6.fl6_dport = t1->dest;
 	fl6.fl6_sport = t1->source;
+	fl6.flowi6_uid = sock_net_uid(net, sk && sk_fullsock(sk) ? sk : NULL);
 	security_skb_classify_flow(skb, flowi6_to_flowi(&fl6));
 
 	/* Pass a socket to ip6_dst_lookup either it is for RST
@@ -1100,9 +1101,9 @@ void tcp_v6_send_reset(struct sock *sk, struct sk_buff *skb)
 			  (th->doff << 2);
 #ifdef CONFIG_MPTCP
 	oif = sk ? sk->sk_bound_dev_if : 0;
-	tcp_v6_send_response(skb, seq, ack_seq, 0, 0, 0, 0, oif, key, 1, 0, 0, 0);
+	tcp_v6_send_response(sk, skb, seq, ack_seq, 0, 0, 0, 0, oif, key, 1, 0, 0, 0);
 #else
-	tcp_v6_send_response(skb, seq, ack_seq, 0, 0, 0, key, 1, 0, 0);
+	tcp_v6_send_response(sk, skb, seq, ack_seq, 0, 0, 0, key, 1, 0, 0);
 #endif
 
 #ifdef CONFIG_TCP_MD5SIG
@@ -1115,21 +1116,21 @@ release_sk1:
 }
 
 #ifdef CONFIG_MPTCP
-static void tcp_v6_send_ack(struct sk_buff *skb, u32 seq, u32 ack, u32 data_ack,
+static void tcp_v6_send_ack(struct sock *sk, struct sk_buff *skb, u32 seq, u32 ack, u32 data_ack,
 			    u32 win, u32 tsval, u32 tsecr, int oif,
 			    struct tcp_md5sig_key *key, u8 tclass,
 			    u32 label, int mptcp)
 {
-	tcp_v6_send_response(skb, seq, ack, data_ack, win, tsval, tsecr, oif,
+	tcp_v6_send_response(sk, skb, seq, ack, data_ack, win, tsval, tsecr, oif,
 			     key, 0, tclass, label,  mptcp);
 }
 #else
-static void tcp_v6_send_ack(struct sk_buff *skb, u32 seq, u32 ack,
+static void tcp_v6_send_ack(struct sock *sk, struct sk_buff *skb, u32 seq, u32 ack,
 			    u32 win, u32 tsval, u32 tsecr,
 			    struct tcp_md5sig_key *key, u8 tclass,
 			    u32 label)
 {
-	tcp_v6_send_response(skb, seq, ack, win, tsval, tsecr, key, 0, tclass,
+	tcp_v6_send_response(sk, skb, seq, ack, win, tsval, tsecr, key, 0, tclass,
 			     label);
 }
 #endif
@@ -1148,14 +1149,14 @@ static void tcp_v6_timewait_ack(struct sock *sk, struct sk_buff *skb)
 		data_ack = (u32)tcptw->mptcp_tw->rcv_nxt;
 		mptcp = 1;
 	}
-	tcp_v6_send_ack(skb, tcptw->tw_snd_nxt, tcptw->tw_rcv_nxt,
+	tcp_v6_send_ack(sk, skb, tcptw->tw_snd_nxt, tcptw->tw_rcv_nxt,
 			data_ack,
 			tcptw->tw_rcv_wnd >> tw->tw_rcv_wscale,
 			tcp_time_stamp + tcptw->tw_ts_offset,
 			tcptw->tw_ts_recent, tw->tw_bound_dev_if, tcp_twsk_md5_key(tcptw),
 			tw->tw_tclass, (tw->tw_flowlabel << 12), mptcp);
 #else
-	tcp_v6_send_ack(skb, tcptw->tw_snd_nxt, tcptw->tw_rcv_nxt,
+	tcp_v6_send_ack(sk, skb, tcptw->tw_snd_nxt, tcptw->tw_rcv_nxt,
 			tcptw->tw_rcv_wnd >> tw->tw_rcv_wscale,
 			tcp_time_stamp + tcptw->tw_ts_offset,
 			tcptw->tw_ts_recent, tcp_twsk_md5_key(tcptw),
@@ -1174,14 +1175,14 @@ void tcp_v6_reqsk_send_ack(struct sock *sk, struct sk_buff *skb,
 	/* sk->sk_state == TCP_LISTEN -> for regular TCP_SYN_RECV
 	 * sk->sk_state == TCP_SYN_RECV -> for Fast Open.
 	 */
-	tcp_v6_send_ack(skb, (sk->sk_state == TCP_LISTEN) ?
+	tcp_v6_send_ack(sk, skb, (sk->sk_state == TCP_LISTEN) ?
 			tcp_rsk(req)->snt_isn + 1 : tcp_sk(sk)->snd_nxt,
 			tcp_rsk(req)->rcv_nxt, 0,
 			req->rcv_wnd, tcp_time_stamp, req->ts_recent, sk->sk_bound_dev_if,
 			tcp_v6_md5_do_lookup(sk, &ipv6_hdr(skb)->daddr),
 			0, 0, 0);
 #else
-	tcp_v6_send_ack(skb, tcp_rsk(req)->snt_isn + 1, tcp_rsk(req)->rcv_isn + 1,
+	tcp_v6_send_ack(sk, skb, tcp_rsk(req)->snt_isn + 1, tcp_rsk(req)->rcv_isn + 1,
 			req->rcv_wnd, tcp_time_stamp, req->ts_recent,
 			tcp_v6_md5_do_lookup(sk, &ipv6_hdr(skb)->daddr),
 			0, 0);

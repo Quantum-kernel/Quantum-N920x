@@ -13,6 +13,7 @@
 #ifndef SEC_DEBUG_H 
 #define SEC_DEBUG_H
 
+#include <linux/sizes.h>
 
 #ifdef CONFIG_SEC_DEBUG
 extern int  sec_debug_init(void);

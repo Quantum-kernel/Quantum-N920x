@@ -8,7 +8,7 @@
  * This software may be redistributed and/or modified under the terms of
  * the GNU General Public License ("GPL") version 2 as published by the
  * Free Software Foundation.
- * Copyright (C) 2018 prashantp01 <elonpras@my.smccd.edu>
+ *
  * This allocator returns small blocks of a given size which are DMA-able by
  * the given device.  It uses the dma_alloc_coherent page allocator to get
  * new pages, then splits them up into blocks of the required size.

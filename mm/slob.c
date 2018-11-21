@@ -31,7 +31,7 @@
  * does not have to be separately tracked.
  * These objects are detected in kfree() because PageSlab()
  * is false for them.
- * Copyright (C) 2018 <elonpras@my.smccd.edu>
+ *
  * SLAB is emulated on top of SLOB by simply calling constructors and
  * destructors for every SLAB allocation. Objects are returned with the
  * 4-byte alignment unless the SLAB_HWCACHE_ALIGN flag is set, in which
