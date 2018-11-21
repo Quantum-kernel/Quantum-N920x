@@ -610,7 +610,7 @@ int exynos_ss_prepare_panic(void)
 	 * kick watchdog to prevent unexpected reset during panic sequence
 	 * and it prevents the hang during panic sequence by watchedog
 	 */
-	// s3c2410wdt_keepalive_emergency(); // kl2500-temporary comment out
+	s3c2410wdt_keepalive_emergency();
 
 	for (cpu = 0; cpu < ESS_NR_CPUS; cpu++) {
 		if (exynos_cpu.power_state(cpu))
@@ -618,9 +618,6 @@ int exynos_ss_prepare_panic(void)
 		else
 			exynos_ss_core_power_stat(ESS_SIGN_DEAD, cpu);
 	}
-	/* stop to watchdog for preventing unexpected reset
-	 * during printing panic message - from khongloi113 */
-	no_wdt_dev = s3c2410wdt_set_emergency_stop();
 	return 0;
 }
 EXPORT_SYMBOL(exynos_ss_prepare_panic);
@@ -958,7 +955,7 @@ static void exynos_ss_dump_one_task_info(struct task_struct *tsk, bool is_main)
 	 * and it prevents the hang during panic sequence by watchedog
 	 */
 	touch_softlockup_watchdog();
-	// s3c2410wdt_keepalive_emergency();// kl2500-temporary comment out
+	s3c2410wdt_keepalive_emergency();
 
 	pr_info("%8d %8d %8d %16lld %c(%d) %3d  %16zx %16zx  %16zx %c %16s [%s]\n",
 			tsk->pid, (int)(tsk->utime), (int)(tsk->stime),

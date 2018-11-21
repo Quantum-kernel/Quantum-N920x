@@ -34,8 +34,9 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	struct dentry *parent_lower_dentry = NULL;
 	struct dentry *lower_cur_parent_dentry = NULL;
 	struct dentry *lower_dentry = NULL;
-	struct inode *inode;
-	struct sdcardfs_inode_data *data;
+#if ANDROID_VERSION >= 70000
+	struct sdcardfs_inode_info *pinfo;
+#endif
 
 	if (flags & LOOKUP_RCU)
 		return -ECHILD;
@@ -44,6 +45,12 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	if (IS_ROOT(dentry)) {
 		spin_unlock(&dentry->d_lock);
 		return 1;
+	}
+	if (dentry->d_flags & DCACHE_WILL_INVALIDATE) {
+		dentry->d_flags &= ~DCACHE_WILL_INVALIDATE;
+		__d_drop(dentry);
+		spin_unlock(&dentry->d_lock);
+		return 0;
 	}
 	spin_unlock(&dentry->d_lock);
 
@@ -61,13 +68,15 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	lower_dentry = lower_path.dentry;
 	lower_cur_parent_dentry = dget_parent(lower_dentry);
 
-	if ((lower_dentry->d_flags & DCACHE_OP_REVALIDATE)) {
-		err = lower_dentry->d_op->d_revalidate(lower_dentry, flags);
-		if (err == 0) {
-			d_drop(dentry);
-			goto out;
-		}
+#if ANDROID_VERSION >= 70000
+	pinfo = SDCARDFS_I(parent_dentry->d_inode);
+	if (pinfo->perm == PERM_ANDROID_OBB && dentry->d_inode &&
+			uid_eq(dentry->d_inode->i_uid, GLOBAL_ROOT_UID)) {
+		d_drop(dentry);
+		err = 0;
+		goto out;
 	}
+#endif
 
 	spin_lock(&lower_dentry->d_lock);
 	if (d_unhashed(lower_dentry)) {
@@ -84,15 +93,25 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 		goto out;
 	}
 
-	if (dentry < lower_dentry) {
-		spin_lock(&dentry->d_lock);
-		spin_lock_nested(&lower_dentry->d_lock, DENTRY_D_LOCK_NESTED);
-	} else {
-		spin_lock(&lower_dentry->d_lock);
-		spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
+	if (dentry == lower_dentry) {
+		err = 0;
+		panic("sdcardfs: dentry is equal to lower_dentry\n");
+		goto out;
 	}
 
-	if (!qstr_case_eq(&dentry->d_name, &lower_dentry->d_name)) {
+	if (dentry < lower_dentry) {
+		spin_lock(&dentry->d_lock);
+		spin_lock(&lower_dentry->d_lock);
+	} else {
+		spin_lock(&lower_dentry->d_lock);
+		spin_lock(&dentry->d_lock);
+	}
+
+	if (dentry->d_name.len != lower_dentry->d_name.len) {
+		__d_drop(dentry);
+		err = 0;
+	} else if (strncasecmp(dentry->d_name.name, lower_dentry->d_name.name,
+				dentry->d_name.len) != 0) {
 		__d_drop(dentry);
 		err = 0;
 	}
@@ -103,21 +122,6 @@ static int sdcardfs_d_revalidate(struct dentry *dentry, unsigned int flags)
 	} else {
 		spin_unlock(&dentry->d_lock);
 		spin_unlock(&lower_dentry->d_lock);
-	}
-	if (!err)
-		goto out;
-
-	/* If our top's inode is gone, we may be out of date */
-	inode = igrab(dentry->d_inode);
-	if (inode) {
-		data = top_data_get(SDCARDFS_I(inode));
-		if (!data || data->abandoned) {
-			d_drop(dentry);
-			err = 0;
-		}
-		if (data)
-			data_put(data);
-		iput(inode);
 	}
 
 out:
@@ -188,8 +192,8 @@ static int sdcardfs_cmp_ci(const struct dentry *parent,
 	}
 	*/
 	if (name->len == len) {
-		if (str_n_case_eq(name->name, str, len))
-			return 0;
+		if (strncasecmp(name->name, str, len) == 0)
+			return 0; 
 	}
 	return 1;
 }
